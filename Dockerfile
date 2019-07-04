@@ -4,11 +4,6 @@ FROM ubuntu:bionic
 
 SHELL ["/bin/bash", "-c"]
 
-# Make /usr/lib -> /usr/
-# Why?? Is this a bug? A difference between debian and ubuntu directory layout?
-RUN cp -Rf /usr/lib/* /usr/ && rm -Rf /usr/lib && ln -s /usr/ /usr/lib
-####
-
 RUN apt-get update&&apt-get upgrade -y
 
 # Install deps
@@ -66,6 +61,8 @@ RUN set -x; \
 RUN apt-get install -y mingw-w64 \
  && apt-get clean
 
+RUN apt-get install -y libc6-dev-i386 libc6-i386 && apt-get clean
+
 
 # Install OSx cross-tools
 
@@ -108,52 +105,13 @@ ENV LINUX_TRIPLES=arm-linux-gnueabi,arm-linux-gnueabihf,aarch64-linux-gnu,powerp
 ENV WINDOWS_TRIPLES=i686-w64-mingw32,x86_64-w64-mingw32                                                                           
 ENV CROSS_TRIPLE=x86_64-linux-gnu
 
-COPY ./assets/osxcross-wrapper /usr/bin/osxcross-wrapper
+#$COPY ./assets/osxcross-wrapper /usr/bin/osxcross-wrapper
 
-RUN ls /usr
-
-RUN shopt -s nullglob; \ 
-for triple in $(echo ${LINUX_TRIPLES} | tr "," " "); do                                       \
-      echo "Run for $triple" ; \
-      for bin in /etc/alternatives/$triple-* /usr/bin/$triple-*; do                               \
-        if [ ! -f "/usr/$triple/bin/$(basename $bin | sed "s/$triple-//")" ]; then                  \
-          echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
-          ln -s $bin /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");                      \
-        fi;                                                                                       \
-      done;                                                                                       \
-    done &&                                                                                       \
-    for triple in $(echo ${DARWIN_TRIPLES} | tr "," " "); do                                      \
-      echo "Run for $triple" \
-      mkdir -p /usr/$triple/bin;                                                                  \
-      for bin in /usr/osxcross/bin/$triple-*; do                                                  \
-        echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
-        ln /usr/bin/osxcross-wrapper /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");      \
-      done &&                                                                                     \
-      rm -f /usr/$triple/bin/clang*;                                                              \
-      ln -s cc /usr/$triple/bin/gcc;                                                              \
-      ln -s /usr/osxcross/SDK/MacOSX${DARWIN_SDK_VERSION}.sdk/usr /usr/x86_64-linux-gnu/$triple;  \
-    done;                                                                                         \
-    for triple in $(echo ${WINDOWS_TRIPLES} | tr "," " "); do                                     \
-      echo "Run for $triple" \
-      mkdir -p /usr/$triple/bin;                                                                  \
-      for bin in /etc/alternatives/$triple-* /usr/bin/$triple-*; do                               \
-        if [ ! -f "/usr/$triple/bin/$(basename $bin | sed "s/$triple-//")" ]; then                  \
-          echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
-          ln -s $bin /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");                      \
-        fi;                                                                                       \
-      done;                                                                                       \
-      ln -s gcc /usr/$triple/bin/cc;                                                              \
-      ln -s /usr/$triple /usr/x86_64-linux-gnu/$triple;                                           \
-    done
-# we need to use default clang binary to avoid a bug in osxcross that recursively call himself
-# with more and more parameters
 
 
 # Image metadata
-ENTRYPOINT ["/usr/bin/crossbuild"]
 CMD ["/bin/bash"]
 WORKDIR /workdir
-COPY ./assets/crossbuild /usr/bin/crossbuild
 
 # Install Java
 COPY ./assets/GetJava8.sh /tmp/GetJava8.sh

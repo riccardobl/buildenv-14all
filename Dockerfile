@@ -1,18 +1,22 @@
-FROM buildpack-deps:jessie-curl
-MAINTAINER Manfred Touron <m@42.am> (https://github.com/moul)
+FROM ubuntu:bionic
+
+# Based on crossbuild MAINTAINER Manfred Touron <m@42.am> (https://github.com/moul)
+
+SHELL ["/bin/bash", "-c"]
+
+# Make /usr/lib -> /usr/
+# Why?? Is this a bug? A difference between debian and ubuntu directory layout?
+RUN cp -Rf /usr/lib/* /usr/ && rm -Rf /usr/lib && ln -s /usr/ /usr/lib
+####
+
+RUN apt-get update&&apt-get upgrade -y
 
 # Install deps
 RUN set -x; \
-    echo deb http://emdebian.org/tools/debian/ jessie main > /etc/apt/sources.list.d/emdebian.list \
- && curl -sL http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - \
- && dpkg --add-architecture arm64                      \
+    echo "deb [arch=arm64,ppc64el,armhf] http://ports.ubuntu.com/ubuntu-ports/ bionic main" > /etc/apt/sources.list.d/ubuntu-ports.list \
  && dpkg --add-architecture armel                      \
- && dpkg --add-architecture armhf                      \
  && dpkg --add-architecture i386                       \
- && dpkg --add-architecture mips                       \
- && dpkg --add-architecture mipsel                     \
  && dpkg --add-architecture powerpc                    \
- && dpkg --add-architecture ppc64el                    \
  && apt-get update                                     \
  && apt-get install -y -q                              \
         autoconf                                       \
@@ -27,24 +31,32 @@ RUN set -x; \
         crossbuild-essential-arm64                     \
         crossbuild-essential-armel                     \
         crossbuild-essential-armhf                     \
-        crossbuild-essential-mipsel                    \
         crossbuild-essential-ppc64el                   \
         curl                                           \
         devscripts                                     \
         gdb                                            \
-        git-core                                       \
+        git                                       \
         libtool                                        \
         llvm                                           \
         mercurial                                      \
         multistrap                                     \
         patch                                          \
-        python-software-properties                     \
         software-properties-common                     \
         subversion                                     \
         wget                                           \
         xz-utils                                       \
         cmake                                          \
         qemu-user-static                               \
+        ca-certificates \
+        netbase \
+        mercurial \
+        bzr \
+        openssh-client \
+        procps \        
+        curl \
+        git-lfs \
+        gnupg \
+        unzip \
  && apt-get clean
 # FIXME: install gcc-multilib
 # FIXME: add mips and powerpc architectures
@@ -58,54 +70,63 @@ RUN apt-get install -y mingw-w64 \
 # Install OSx cross-tools
 
 #Build arguments
-ARG osxcross_repo="tpoechtrager/osxcross"
-ARG osxcross_revision="a845375e028d29b447439b0c65dea4a9b4d2b2f6"
-ARG darwin_sdk_version="10.10"
-ARG darwin_osx_version_min="10.6"
-ARG darwin_version="14"
-ARG darwin_sdk_url="https://www.dropbox.com/s/yfbesd249w10lpc/MacOSX${darwin_sdk_version}.sdk.tar.xz"
+#ARG osxcross_repo="tpoechtrager/osxcross"
+#ARG osxcross_revision="a845375e028d29b447439b0c65dea4a9b4d2b2f6"
+#ARG darwin_sdk_version="10.10"
+#ARG darwin_osx_version_min="10.6"
+#ARG darwin_version="14"
+#ARG darwin_sdk_url="https://www.dropbox.com/s/yfbesd249w10lpc/MacOSX${darwin_sdk_version}.sdk.tar.xz"
 
 # ENV available in docker image
-ENV OSXCROSS_REPO="${osxcross_repo}"                   \
-    OSXCROSS_REVISION="${osxcross_revision}"           \
-    DARWIN_SDK_VERSION="${darwin_sdk_version}"         \
-    DARWIN_VERSION="${darwin_version}"                 \
-    DARWIN_OSX_VERSION_MIN="${darwin_osx_version_min}" \
-    DARWIN_SDK_URL="${darwin_sdk_url}"
+#ENV OSXCROSS_REPO="${osxcross_repo}"                   \
+#    OSXCROSS_REVISION="${osxcross_revision}"           \
+##    DARWIN_SDK_VERSION="${darwin_sdk_version}"         \
+#    DARWIN_VERSION="${darwin_version}"                 \
+#    DARWIN_OSX_VERSION_MIN="${darwin_osx_version_min}" \
+#    DARWIN_SDK_URL="${darwin_sdk_url}"
 
-RUN mkdir -p "/tmp/osxcross"                                                                                   \
- && cd "/tmp/osxcross"                                                                                         \
- && curl -sLo osxcross.tar.gz "https://codeload.github.com/${OSXCROSS_REPO}/tar.gz/${OSXCROSS_REVISION}"  \
- && tar --strip=1 -xzf osxcross.tar.gz                                                                         \
- && rm -f osxcross.tar.gz                                                                                      \
- && curl -sLo tarballs/MacOSX${DARWIN_SDK_VERSION}.sdk.tar.xz                                                  \
-             "${DARWIN_SDK_URL}"                \
- && yes "" | SDK_VERSION="${DARWIN_SDK_VERSION}" OSX_VERSION_MIN="${DARWIN_OSX_VERSION_MIN}" ./build.sh                               \
- && mv target /usr/osxcross                                                                                    \
- && mv tools /usr/osxcross/                                                                                    \
- && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/omp                                                    \
- && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/osxcross-macports                                      \
- && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/osxcross-mp                                            \
- && rm -rf /tmp/osxcross                                                                                       \
- && rm -rf "/usr/osxcross/SDK/MacOSX${DARWIN_SDK_VERSION}.sdk/usr/share/man"
+#RUN mkdir -p "/tmp/osxcross"                                                                                   \
+# && cd "/tmp/osxcross"                                                                                         \
+# && curl -sLo osxcross.tar.gz "https://codeload.github.com/${OSXCROSS_REPO}/tar.gz/${OSXCROSS_REVISION}"  \
+# && tar --strip=1 -xzf osxcross.tar.gz                                                                         \
+# && rm -f osxcross.tar.gz                                                                                      \
+# && curl -sLo tarballs/MacOSX${DARWIN_SDK_VERSION}.sdk.tar.xz                                                  \
+#             "${DARWIN_SDK_URL}"                \
+# && yes "" | SDK_VERSION="${DARWIN_SDK_VERSION}" OSX_VERSION_MIN="${DARWIN_OSX_VERSION_MIN}" ./build.sh                               \
+# && mv target /usr/osxcross                                                                                    \
+# && mv tools /usr/osxcross/                                                                                    \
+# && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/omp                                                    \
+# && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/osxcross-macports                                      \
+# && ln -sf ../tools/osxcross-macports /usr/osxcross/bin/osxcross-mp                                            \
+# && rm -rf /tmp/osxcross                                                                                       \
+# && rm -rf "/usr/osxcross/SDK/MacOSX${DARWIN_SDK_VERSION}.sdk/usr/share/man"
 
 
 # Create symlinks for triples and set default CROSS_TRIPLE
-ENV LINUX_TRIPLES=arm-linux-gnueabi,arm-linux-gnueabihf,aarch64-linux-gnu,mipsel-linux-gnu,powerpc64le-linux-gnu                  \
-    DARWIN_TRIPLES=x86_64h-apple-darwin${DARWIN_VERSION},x86_64-apple-darwin${DARWIN_VERSION},i386-apple-darwin${DARWIN_VERSION}  \
-    WINDOWS_TRIPLES=i686-w64-mingw32,x86_64-w64-mingw32                                                                           \
-    CROSS_TRIPLE=x86_64-linux-gnu
+ENV LINUX_TRIPLES=arm-linux-gnueabi,arm-linux-gnueabihf,aarch64-linux-gnu,powerpc64le-linux-gnu                  
+#ENV DARWIN_TRIPLES=x86_64h-apple-darwin${DARWIN_VERSION},x86_64-apple-darwin${DARWIN_VERSION},i386-apple-darwin${DARWIN_VERSION}  
+ENV WINDOWS_TRIPLES=i686-w64-mingw32,x86_64-w64-mingw32                                                                           
+ENV CROSS_TRIPLE=x86_64-linux-gnu
+
 COPY ./assets/osxcross-wrapper /usr/bin/osxcross-wrapper
-RUN for triple in $(echo ${LINUX_TRIPLES} | tr "," " "); do                                       \
+
+RUN ls /usr
+
+RUN shopt -s nullglob; \ 
+for triple in $(echo ${LINUX_TRIPLES} | tr "," " "); do                                       \
+      echo "Run for $triple" ; \
       for bin in /etc/alternatives/$triple-* /usr/bin/$triple-*; do                               \
-        if [ ! -f /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") ]; then                  \
+        if [ ! -f "/usr/$triple/bin/$(basename $bin | sed "s/$triple-//")" ]; then                  \
+          echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
           ln -s $bin /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");                      \
         fi;                                                                                       \
       done;                                                                                       \
     done &&                                                                                       \
     for triple in $(echo ${DARWIN_TRIPLES} | tr "," " "); do                                      \
+      echo "Run for $triple" \
       mkdir -p /usr/$triple/bin;                                                                  \
       for bin in /usr/osxcross/bin/$triple-*; do                                                  \
+        echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
         ln /usr/bin/osxcross-wrapper /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");      \
       done &&                                                                                     \
       rm -f /usr/$triple/bin/clang*;                                                              \
@@ -113,9 +134,11 @@ RUN for triple in $(echo ${LINUX_TRIPLES} | tr "," " "); do                     
       ln -s /usr/osxcross/SDK/MacOSX${DARWIN_SDK_VERSION}.sdk/usr /usr/x86_64-linux-gnu/$triple;  \
     done;                                                                                         \
     for triple in $(echo ${WINDOWS_TRIPLES} | tr "," " "); do                                     \
+      echo "Run for $triple" \
       mkdir -p /usr/$triple/bin;                                                                  \
       for bin in /etc/alternatives/$triple-* /usr/bin/$triple-*; do                               \
-        if [ ! -f /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") ]; then                  \
+        if [ ! -f "/usr/$triple/bin/$(basename $bin | sed "s/$triple-//")" ]; then                  \
+          echo "Link $bin to /usr/$triple/bin/$(basename $bin | sed "s/$triple-//") "; \
           ln -s $bin /usr/$triple/bin/$(basename $bin | sed "s/$triple-//");                      \
         fi;                                                                                       \
       done;                                                                                       \
@@ -131,3 +154,36 @@ ENTRYPOINT ["/usr/bin/crossbuild"]
 CMD ["/bin/bash"]
 WORKDIR /workdir
 COPY ./assets/crossbuild /usr/bin/crossbuild
+
+# Install Java
+COPY ./assets/GetJava8.sh /tmp/GetJava8.sh
+RUN chmod +x /tmp/GetJava8.sh 
+ENV JAVA_HOME=/opt/java/jdk/lin64
+
+# Linux 64 bit
+RUN mkdir -p /opt/java/jdk/lin64 \
+&& mkdir -p /opt/java/jre/lin64 \
+&& /tmp/GetJava8.sh linux64 jdk /opt/java/jdk/lin64 \
+&& /tmp/GetJava8.sh linux64 jre /opt/java/jre/lin64
+
+
+# Windows 64 bit
+RUN mkdir -p /opt/java/jdk/win64 \
+&& mkdir -p /opt/java/jre/win64 \
+&& /tmp/GetJava8.sh win64 jdk /opt/java/jdk/win64 \
+&& /tmp/GetJava8.sh win64 jre /opt/java/jre/win64
+
+
+# Install gradle
+RUN curl https://downloads.gradle.org/distributions/gradle-5.5-bin.zip -o /tmp/gradle.zip
+RUN if [ "`sha256sum /tmp/gradle.zip | cut -d' ' -f1`" != "8d78b2ed63e7f07ad169c1186d119761c4773e681f332cfe1901045b1b0141bc" ];\
+    then \
+        echo "Error. This version of gradle is corrupted."; \
+        exit 1;\
+    fi && \
+    mkdir -p /tmp/gradle && \
+    unzip -q -d /tmp/gradle /tmp/gradle.zip &&\
+    cp -Rf /tmp/gradle/gradle-*/* / &&\
+    rm -Rf /tmp/gradle && rm -f /tmp/gradle.zip && \
+    echo "Installed gradle `gradle -v`"
+

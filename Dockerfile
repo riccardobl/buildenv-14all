@@ -53,9 +53,7 @@ RUN set -x; \
         gnupg \
         unzip \
  && apt-get clean
-# FIXME: install gcc-multilib
-# FIXME: add mips and powerpc architectures
-
+ 
 
 # Install Windows cross-tools
 RUN apt-get install -y mingw-w64 \
@@ -63,6 +61,7 @@ RUN apt-get install -y mingw-w64 \
 
 RUN apt-get install -y libc6-dev-i386 libc6-i386 && apt-get clean
 
+RUN git lfs install
 
 # Install OSx cross-tools
 

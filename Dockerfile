@@ -145,3 +145,5 @@ RUN if [ "`sha256sum /tmp/gradle.zip | cut -d' ' -f1`" != "8d78b2ed63e7f07ad169c
     rm -Rf /tmp/gradle && rm -f /tmp/gradle.zip && \
     echo "Installed gradle `gradle -v`"
 
+RUN mkdir -p /cache
+ENV GRADLE_USER_HOME=/cache/.gradle

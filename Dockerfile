@@ -116,6 +116,7 @@ WORKDIR /workdir
 COPY ./assets/GetJava8.sh /tmp/GetJava8.sh
 RUN chmod +x /tmp/GetJava8.sh 
 ENV JAVA_HOME=/opt/java/jdk/lin64
+ENV PATH="/opt/java/jdk/lin64/bin/:${PATH}"
 
 # Linux 64 bit
 RUN mkdir -p /opt/java/jdk/lin64 \

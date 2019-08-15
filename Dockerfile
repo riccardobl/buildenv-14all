@@ -147,3 +147,6 @@ RUN if [ "`sha256sum /tmp/gradle.zip | cut -d' ' -f1`" != "8d78b2ed63e7f07ad169c
 
 RUN mkdir -p /cache
 ENV GRADLE_USER_HOME=/cache/.gradle
+
+
+RUN apt-get install -y libprotobuf-dev protobuf-compiler

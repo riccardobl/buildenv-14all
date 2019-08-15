@@ -150,3 +150,4 @@ ENV GRADLE_USER_HOME=/cache/.gradle
 
 
 RUN apt-get install -y libprotobuf-dev protobuf-compiler
+RUN apt-get install -y ninja-build libssl-dev

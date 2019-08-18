@@ -115,7 +115,17 @@ WORKDIR /workdir
 # Install Java
 COPY ./assets/GetJava8.sh /tmp/GetJava8.sh
 RUN chmod +x /tmp/GetJava8.sh 
+
 ENV JAVA_HOME=/opt/java/jdk/lin64
+ENV JAVA_HOME_LINUX=/opt/java/jdk/lin64
+ENV JAVA_HOME_WINDOWS=/opt/java/jdk/win64
+
+ENV JAVA_INCLUDE_MD=/opt/java/jdk/lin64/include/linux
+ENV JAVA_INCLUDE_MD_LINUX=/opt/java/jdk/lin64/include/linux
+ENV JAVA_INCLUDE_MD_WINDOWS=/opt/java/jdk/win64/include/win32
+
+ENV JAVA_INCLUDE=/opt/java/jdk/lin64/include
+
 ENV PATH="/opt/java/jdk/lin64/bin/:${PATH}"
 
 # Linux 64 bit

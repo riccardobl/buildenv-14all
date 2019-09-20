@@ -1,6 +1,7 @@
 FROM riccardoblb/buildenv-14all:java
 
 #Based on https://github.com/mreichelt/docker-android LABEL maintainer="mcreichelt@gmail.com"
+WORKDIR /opt
 
 ENV ANDROID_SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip" \
     ANDROID_HOME="/opt/android" \
@@ -10,7 +11,7 @@ ENV PATH $PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platfor
 
 # Download emulator script
 ADD android-wait-for-emulator /opt/android-wait-for-emulator
-RUN chmod +x android-wait-for-emulator
+RUN chmod +x /opt/android-wait-for-emulator
 
 # Install Android SDK tools
 RUN mkdir android && cd android && \
@@ -38,3 +39,4 @@ RUN yes | sdkmanager ndk-bundle
 ENV ANDROID_NDK_HOME ${ANDROID_HOME}/ndk-bundle
 ENV ANDROID_NDK $ANDROID_HOME/ndk-bundle/
 
+WORKDIR /workdir

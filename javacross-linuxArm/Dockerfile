@@ -57,10 +57,10 @@ mkdir -p /opt/java/jdk/arm64 \
 && mkdir -p /opt/java/jdk11/armhf \
 && mkdir -p /opt/java/jdk11/arm \
 \
-&& GetJava linuxArm64 jdk8 /opt/java/jdk/arm64
-&& GetJava linuxArmHF jdk8 /opt/java/jdk/armhf
-&& GetJava linuxArm jdk8 /opt/java/jdk/arm
+&& GetJava linuxArm64 jdk8 /opt/java/jdk/arm64 \
+&& GetJava linuxArmHF jdk8 /opt/java/jdk/armhf \
+&& GetJava linuxArm jdk8 /opt/java/jdk/arm \
 \
-&& GetJava linuxArm64 jdk11 /opt/java/jdk11/arm64
-&& GetJava linuxArmHF jdk11 /opt/java/jdk11/armhf
-&& GetJava linuxArm jdk11 /opt/java/jdk11/arm
+&& GetJava linuxArm64 jdk11 /opt/java/jdk11/arm64 \
+&& GetJava linuxArmHF jdk11 /opt/java/jdk11/armhf \
+&& GetJava linuxArm jdk11 /opt/java/jdk11/arm 
